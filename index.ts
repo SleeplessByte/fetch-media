@@ -42,7 +42,7 @@ function remapHeaders(headers: Partial<KnownHeaders>): Record<string, string> {
 }
 
 type MediaHeaders = Partial<KnownHeaders> & Pick<KnownHeaders, 'accept'>;
-type MediaMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type MediaMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS';
 type MediaOptions = {
   headers: MediaHeaders;
   method?: MediaMethod;
