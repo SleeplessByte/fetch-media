@@ -32,7 +32,7 @@ interface KnownHeaders {
 
 function remapHeaders(headers: Partial<KnownHeaders>): Record<string, string> {
   return Object.keys(headers).reduce((result, header) => {
-    const mapped = header.split(/[A-Z]/g).join('-').toLocaleLowerCase();
+    const mapped = header.replace(/[A-Z]/g, (m) => '-' + m.toLocaleLowerCase());
     const value = headers[header as keyof KnownHeaders];
     if (value) {
       result[mapped] = value;
@@ -208,35 +208,55 @@ function encodeBody(
   return data;
 }
 
-export class NoResponseContentType extends Error {
-  constructor(public readonly url: string, public readonly response: Response) {
-    super(`
-      A request to ${url} yielded a response (${response.status}: ${response.statusText}) without a Content-Type.
-    `);
+export class FetchMediaError extends Error {
+  constructor(message: string, public readonly response: Response) {
+    super(message);
+
+    Object.setPrototypeOf(this, FetchMediaError.prototype);
   }
 }
 
-export class MediaTypeUnsupported extends Error {
+export class NoResponseContentType extends FetchMediaError {
+  constructor(public readonly url: string, response: Response) {
+    super(
+      `
+      A request to ${url} yielded a response (${response.status}: ${response.statusText}) without a Content-Type.
+    `,
+      response
+    );
+
+    Object.setPrototypeOf(this, NoResponseContentType.prototype);
+  }
+}
+
+export class MediaTypeUnsupported extends FetchMediaError {
   constructor(
     public readonly url: string,
-    public readonly response: Response,
+    response: Response,
     public readonly accept: string,
     public readonly contentType: string
   ) {
-    super(`
+    super(
+      `
       A request to ${url} yielded a response (${response.status}: ${response.statusText})
       with a Content-Type that is unsupported. The original request expected:
 
       ${accept}
 
       The final response reports as ${contentType}.
-    `);
+    `,
+      response
+    );
+
+    Object.setPrototypeOf(this, MediaTypeUnsupported.prototype);
   }
 }
 
-export class JsonError extends Error {
-  constructor(public readonly response: Response, data: any) {
-    super(JsonError.getError(data));
+export class JsonError extends FetchMediaError {
+  constructor(response: Response, public readonly data: any) {
+    super(JsonError.getError(data), response);
+
+    Object.setPrototypeOf(this, JsonError.prototype);
   }
 
   private static getError(data: any): string {
@@ -244,9 +264,11 @@ export class JsonError extends Error {
   }
 }
 
-export class StructuredErrors extends Error {
-  constructor(public readonly response: Response, data: any) {
-    super(StructuredErrors.getError(data));
+export class StructuredErrors extends FetchMediaError {
+  constructor(response: Response, public readonly data: any) {
+    super(StructuredErrors.getError(data), response);
+
+    Object.setPrototypeOf(this, StructuredErrors.prototype);
   }
 
   private static getError(data: any): string {
@@ -256,9 +278,11 @@ export class StructuredErrors extends Error {
   }
 }
 
-export class Problem extends Error {
-  constructor(public readonly response: Response, data: any) {
-    super(Problem.getError(data));
+export class Problem extends FetchMediaError {
+  constructor(response: Response, public readonly data: any) {
+    super(Problem.getError(data), response);
+
+    Object.setPrototypeOf(this, Problem.prototype);
   }
 
   private static getError(data: any): string {
@@ -266,9 +290,11 @@ export class Problem extends Error {
   }
 }
 
-export class TextError extends Error {
-  constructor(public readonly response: Response, data: string) {
-    super(TextError.getError(response, data));
+export class TextError extends FetchMediaError {
+  constructor(response: Response, public readonly data: string) {
+    super(TextError.getError(response, data), response);
+
+    Object.setPrototypeOf(this, TextError.prototype);
   }
 
   private static getError(response: Response, data: string): string {
