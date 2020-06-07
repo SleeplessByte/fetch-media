@@ -73,7 +73,7 @@ export async function fetchMedia(
 ): Promise<object | string> {
   const headers: Record<string, string> = {
     ...HeadersRef.current,
-    accept: [accept, AcceptRef].join(', '),
+    accept: [accept, AcceptRef.current].join(', '),
     ...remapHeaders(otherHeaders),
   };
 
