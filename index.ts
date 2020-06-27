@@ -8,7 +8,7 @@ const MEDIA_AUDIO_GROUP = 'audio/';
 const MEDIA_VIDEO_GROUP = 'video/';
 const MEDIA_FORM_DATA = 'multipart/form-data';
 const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
-const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]+)\+json/;
+const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
