@@ -151,7 +151,7 @@ export async function fetchMedia(
   if (body && !contentType) {
     throw new NoRequestContentType(
       url,
-      new Response(undefined, { status: -1 })
+      new Response(undefined, { status: 400 })
     );
   }
 
