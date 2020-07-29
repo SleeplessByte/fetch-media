@@ -148,7 +148,7 @@ export async function fetchMedia(
     encodedBody && console.debug('> body', encodedBody);
   }
 
-  if (body && !contentType) {
+  if (body && !contentType && !(body instanceof FormData)) {
     throw new NoRequestContentType(
       url,
       new Response(undefined, { status: 400 })
