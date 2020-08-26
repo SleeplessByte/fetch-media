@@ -242,6 +242,22 @@ export async function fetchMedia(
       // It's a generic json error
       if (errorContentType.startsWith(MEDIA_JSON)) {
         return responseOrError.json().then((response_3) => {
+          // Test if it can be coerced into a structured error
+          if (
+            typeof response_3 === 'object' &&
+            response_3 !== null &&
+            response_3.hasOwnProperty('errors') &&
+            Array.isArray(response_3['errors']) &&
+            (response_3['errors'].length === 0 ||
+              (typeof response_3['errors'][0] === 'object' &&
+                response_3['errors'][0] !== null &&
+                response_3['errors'][0].hasOwnProperty('message')))
+          ) {
+            return Promise.reject(
+              new StructuredErrors(responseOrError, response_3)
+            );
+          }
+
           return Promise.reject(new JsonError(responseOrError, response_3));
         });
       }
