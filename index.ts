@@ -71,6 +71,11 @@ type MediaOptions = {
    */
   debug?: boolean;
 
+  hooks?: {
+    before?: (request: MediaRequestBag) => void;
+    after?: (response: MediaResponseBag) => void;
+  };
+
   /**
    * If true, raises when JSON is returned
    */
@@ -95,6 +100,41 @@ type MediaOptions = {
    * If false, raises when binary is returned
    */
   handleBinary?: false | 'array-buffer' | 'blob';
+};
+
+type MediaRequestBag = Pick<MediaOptions, 'method'> &
+  Pick<MediaHeaders, 'accept' | 'contentType'> & {
+    url: string;
+    encodedBody: ReturnType<typeof encodeBody>;
+    headers: Record<string, string>;
+  };
+type MediaResponseBag = Pick<Response, 'status' | 'url' | 'headers'> &
+  Pick<MediaHeaders, 'contentType'>;
+
+const DEBUG_BEFORE = ({
+  method,
+  url,
+  accept,
+  contentType,
+  headers,
+  encodedBody,
+}: MediaRequestBag): void => {
+  console.debug(`${method} ${url}`);
+  console.debug('> accept', accept);
+  (contentType || encodedBody) && console.debug('> body of', contentType);
+  console.debug('> headers', headers);
+  encodedBody && console.debug('> body', encodedBody);
+};
+
+const DEBUG_AFTER = ({
+  status,
+  url,
+  contentType,
+  headers,
+}: MediaResponseBag): void => {
+  console.debug(`< [${status}] ${url}`);
+  contentType && console.debug('< body of', contentType);
+  console.debug('< headers', headers);
 };
 
 /**
@@ -124,6 +164,11 @@ export async function fetchMedia(
     signal,
     debug,
 
+    hooks: { before = DEBUG_BEFORE, after = DEBUG_AFTER } = {
+      before: debug ? DEBUG_BEFORE : undefined,
+      after: debug ? DEBUG_AFTER : undefined,
+    },
+
     disableJson,
     disableText,
     disableFormData,
@@ -140,13 +185,7 @@ export async function fetchMedia(
   const contentType = headers['content-type'];
   const encodedBody = encodeBody(body, contentType);
 
-  if (debug) {
-    console.debug(`${method} ${url}`);
-    console.debug('> accept', accept);
-    console.debug('> body of', contentType);
-    console.debug('> headers', headers);
-    encodedBody && console.debug('> body', encodedBody);
-  }
+  before?.({ method, url, accept, contentType, headers, encodedBody });
 
   if (body && !contentType && !(body instanceof FormData)) {
     throw new NoRequestContentType(
@@ -173,6 +212,13 @@ export async function fetchMedia(
     if (!responseContentType) {
       throw new NoResponseContentType(url, response);
     }
+
+    after?.({
+      url: response.url,
+      status: response.status,
+      headers: response.headers,
+      contentType: responseContentType,
+    });
 
     // The response is json
     if (
@@ -222,6 +268,13 @@ export async function fetchMedia(
 
     if (responseOrError instanceof Response) {
       const errorContentType = responseOrError.headers.get('content-type')!;
+
+      after?.({
+        url: responseOrError.url,
+        status: responseOrError.status,
+        headers: responseOrError.headers,
+        contentType: errorContentType,
+      });
 
       // It's a problem
       if (errorContentType.startsWith(MEDIA_PROBLEM)) {
@@ -416,7 +469,8 @@ export class JsonError extends FetchMediaError {
   }
 
   private static getError(data: any): string {
-    return data['message'];
+    // Common error keys
+    return data['message'] || data['error'] || data['details'] || data['title'];
   }
 }
 
