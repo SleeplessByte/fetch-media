@@ -4,6 +4,9 @@ module.exports = {
   env: {
     browser: true,
   },
+  rules: {
+    "@typescript-eslint/no-redeclare": 0
+  },
   overrides: [
     {
       files: ['index.ts'],

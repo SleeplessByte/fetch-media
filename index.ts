@@ -134,7 +134,15 @@ const DEBUG_AFTER = ({
 }: MediaResponseBag): void => {
   console.debug(`< [${status}] ${url}`);
   contentType && console.debug('< body of', contentType);
-  console.debug('< headers', headers);
+
+  const logHeaders: Record<string, string> = {};
+
+  headers.forEach(
+    (val, key) =>
+      (logHeaders[key] = logHeaders[key] ? `${logHeaders[key]}, ${val}` : val)
+  );
+
+  console.debug('< headers', logHeaders);
 };
 
 /**

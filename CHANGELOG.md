@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Read out headers in debug logger
+
 ## 1.3.0
 
 - Add before and after hook
