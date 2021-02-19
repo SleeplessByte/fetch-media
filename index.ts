@@ -172,7 +172,10 @@ export async function fetchMedia(
     signal,
     debug,
 
-    hooks: { before = DEBUG_BEFORE, after = DEBUG_AFTER } = {
+    hooks: {
+      before = debug ? DEBUG_BEFORE : undefined,
+      after = debug ? DEBUG_AFTER : undefined,
+    } = {
       before: debug ? DEBUG_BEFORE : undefined,
       after: debug ? DEBUG_AFTER : undefined,
     },
