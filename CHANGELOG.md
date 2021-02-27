@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- Better parsing for generic JSON Error
+- Add fallback for generic JSON Error
+
 ## 1.3.2
 
 - Fix default hooks when debug is false
