@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- Rebind debug in case it's not available
+
 ## 1.4.0
 
 - Better parsing for generic JSON Error

@@ -111,6 +111,13 @@ type MediaRequestBag = Pick<MediaOptions, 'method'> &
 type MediaResponseBag = Pick<Response, 'status' | 'url' | 'headers'> &
   Pick<MediaHeaders, 'contentType'>;
 
+const debug =
+  typeof console === 'object'
+    ? 'debug' in console
+      ? console.debug.bind(console)
+      : (console as Console).log.bind(console)
+    : process.stdout.write.bind(process.stdout);
+
 const DEBUG_BEFORE = ({
   method,
   url,
@@ -119,11 +126,11 @@ const DEBUG_BEFORE = ({
   headers,
   encodedBody,
 }: MediaRequestBag): void => {
-  console.debug(`${method} ${url}`);
-  console.debug('> accept', accept);
-  (contentType || encodedBody) && console.debug('> body of', contentType);
-  console.debug('> headers', headers);
-  encodedBody && console.debug('> body', encodedBody);
+  debug(`${method} ${url}`);
+  debug('> accept', accept);
+  (contentType || encodedBody) && debug('> body of', contentType);
+  debug('> headers', headers);
+  encodedBody && debug('> body', encodedBody);
 };
 
 const DEBUG_AFTER = ({
@@ -132,8 +139,8 @@ const DEBUG_AFTER = ({
   contentType,
   headers,
 }: MediaResponseBag): void => {
-  console.debug(`< [${status}] ${url}`);
-  contentType && console.debug('< body of', contentType);
+  debug(`< [${status}] ${url}`);
+  contentType && debug('< body of', contentType);
 
   const logHeaders: Record<string, string> = {};
 
@@ -142,7 +149,7 @@ const DEBUG_AFTER = ({
       (logHeaders[key] = logHeaders[key] ? `${logHeaders[key]}, ${val}` : val)
   );
 
-  console.debug('< headers', logHeaders);
+  debug('< headers', logHeaders);
 };
 
 /**
