@@ -1,11 +1,12 @@
 {
   "name": "fetch-media",
-  "version": "2.0.0-rc2",
+  "version": "2.0.0-rc3",
   "description": "Utility function that uses fetch to fetch a media-enabled resource",
   "main": "index.cjs.js",
   "module": "index.es.js",
   "types": "index.d.ts",
   "license": "MIT",
+  "sideEffects": false,
   "scripts": {
     "build": "yarn build:main && yarn build:module && yarn build:dts",
     "build:main": "rimraf dist && yarn ncc build index.ts -o dist --target es3 && move .\\dist\\index.js index.cjs.js",
