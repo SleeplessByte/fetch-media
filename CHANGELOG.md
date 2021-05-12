@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0
+
+- Add `fetchMediaWrapped`
+- Add generic overloads
+- Use new build system
+
 ## 1.4.1
 
 - Rebind debug in case it's not available

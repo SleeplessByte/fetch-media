@@ -42,4 +42,4 @@ fetchMedia('https://example.org', {
 
 ---
 
-TODO: a way to _wrap_ the return value so that the media type can be retrieved
+You can use `fetchMediaWrapped` to get the full response (so you can read out headers)
