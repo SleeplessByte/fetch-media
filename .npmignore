@@ -1,0 +1,13 @@
+/dist
+/index.cjs.js
+/node_modules
+/.eslintignore
+/.eslintrc.js
+/.gitattributes
+/.gitignore
+/.npmignore
+/.prettierrc
+/babel.config.js
+/CHANGELOG.md
+/jest.config.js
+/tsconfig.json
