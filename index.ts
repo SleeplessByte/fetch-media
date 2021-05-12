@@ -1,14 +1,24 @@
-const MEDIA_PROBLEM = 'application/problem+json';
-const MEDIA_JSON_SUFFIX = '+json';
-const MEDIA_JSON = 'application/json';
-const MEDIA_GENERIC_BIN = 'application/octet-stream';
-const MEDIA_TEXT_GROUP = 'text/';
-const MEDIA_IMAGE_GROUP = 'image/';
-const MEDIA_AUDIO_GROUP = 'audio/';
-const MEDIA_VIDEO_GROUP = 'video/';
-const MEDIA_FORM_DATA = 'multipart/form-data';
-const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
-const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
+import { MediaResponse } from './MediaResponse';
+
+import { JsonError } from './JsonError';
+import { MediaTypeUnsupported } from './MediaTypeUnsupported';
+import { NoRequestContentType } from './NoRequestContentType';
+import { NoResponseContentType } from './NoResponseContentType';
+import { Problem } from './Problem';
+import { StructuredErrors } from './StructuredErrors';
+import { TextError } from './TextError';
+
+export const MEDIA_PROBLEM = 'application/problem+json';
+export const MEDIA_JSON_SUFFIX = '+json';
+export const MEDIA_JSON = 'application/json';
+export const MEDIA_GENERIC_BIN = 'application/octet-stream';
+export const MEDIA_TEXT_GROUP = 'text/';
+export const MEDIA_IMAGE_GROUP = 'image/';
+export const MEDIA_AUDIO_GROUP = 'audio/';
+export const MEDIA_VIDEO_GROUP = 'video/';
+export const MEDIA_FORM_DATA = 'multipart/form-data';
+export const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
+export const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
@@ -152,6 +162,65 @@ const DEBUG_AFTER = ({
   debug('< headers', logHeaders);
 };
 
+export async function fetchMedia(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson: true;
+    disableText?: false;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<string>;
+
+export async function fetchMedia(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson?: false;
+    disableText: true;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<object>;
+
+export async function fetchMedia(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson?: false;
+    disableText?: false;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<object | string>;
+
+export async function fetchMedia(
+  url: string,
+  options: MediaOptions
+): Promise<unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams>;
+
 /**
  * Fetches media from a URL
  *
@@ -171,6 +240,77 @@ const DEBUG_AFTER = ({
  * @returns A fetch promise
  */
 export async function fetchMedia(
+  url: string,
+  options: MediaOptions
+): Promise<unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams> {
+  const result = await fetchMediaWrapped(url, options);
+  return result.unwrap();
+}
+
+export async function fetchMediaWrapped(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson: true;
+    disableText?: false;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<MediaResponse<string>>;
+
+export async function fetchMediaWrapped(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson?: false;
+    disableText: true;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<MediaResponse<unknown>>;
+
+export async function fetchMediaWrapped(
+  url: string,
+  options: Omit<
+    MediaOptions,
+    | 'disableJson'
+    | 'disableText'
+    | 'disableFormData'
+    | 'disableFormUrlEncoded'
+    | 'handleBinary'
+  > & {
+    disableJson?: false;
+    disableText?: false;
+    disableFormData: true;
+    disableFormUrlEncoded: true;
+    handleBinary?: false;
+  }
+): Promise<MediaResponse<unknown | string>>;
+
+export async function fetchMediaWrapped(
+  url: string,
+  options: MediaOptions
+): Promise<
+  MediaResponse<
+    unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams
+  >
+>;
+
+export async function fetchMediaWrapped(
   url: string,
   {
     headers: { accept, ...otherHeaders },
@@ -193,7 +333,11 @@ export async function fetchMedia(
     disableFormUrlEncoded,
     handleBinary,
   }: MediaOptions
-): Promise<object | string | ArrayBuffer | Blob | FormData | URLSearchParams> {
+): Promise<
+  MediaResponse<
+    unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams
+  >
+> {
   const headers: Record<string, string> = {
     ...HeadersRef.current,
     accept: [accept, AcceptRef.current].join(', '),
@@ -206,9 +350,10 @@ export async function fetchMedia(
   before?.({ method, url, accept, contentType, headers, encodedBody });
 
   if (body && !contentType && !(body instanceof FormData)) {
-    throw new NoRequestContentType(
-      url,
-      new Response(undefined, { status: 400 })
+    const response = new Response(undefined, { status: 400 });
+    return MediaResponse.error(
+      new NoRequestContentType(url, response),
+      response
     );
   }
 
@@ -219,6 +364,7 @@ export async function fetchMedia(
       body: encodeBody(body, contentType, debug),
       signal,
     });
+
     // Forward response to error
     if (!response.ok || response.status >= 400) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -228,7 +374,10 @@ export async function fetchMedia(
     // Test for response content
     const responseContentType = response.headers.get('content-type');
     if (!responseContentType) {
-      throw new NoResponseContentType(url, response);
+      return MediaResponse.error(
+        new NoResponseContentType(url, response),
+        response
+      );
     }
 
     after?.({
@@ -243,12 +392,12 @@ export async function fetchMedia(
       (!disableJson && responseContentType.includes(MEDIA_JSON_SUFFIX)) ||
       responseContentType.startsWith(MEDIA_JSON)
     ) {
-      return response.json();
+      return MediaResponse.json(response);
     }
 
     // The response is text
     if (!disableText && responseContentType.startsWith(MEDIA_TEXT_GROUP)) {
-      return response.text();
+      return MediaResponse.text(response);
     }
 
     // The response is binary
@@ -260,13 +409,13 @@ export async function fetchMedia(
         responseContentType.startsWith(MEDIA_GENERIC_BIN))
     ) {
       return handleBinary === 'array-buffer'
-        ? response.arrayBuffer()
-        : response.blob();
+        ? MediaResponse.arrayBuffer(response)
+        : MediaResponse.blob(response);
     }
 
     // The response is form data
     if (!disableFormData && responseContentType.startsWith(MEDIA_FORM_DATA)) {
-      return response.formData();
+      return MediaResponse.formData(response);
     }
 
     // The response is url encoded form data (in the body)
@@ -274,7 +423,7 @@ export async function fetchMedia(
       !disableFormUrlEncoded &&
       responseContentType.startsWith(MEDIA_FORM_URL_ENCODED)
     ) {
-      return response.text().then((result) => new URLSearchParams(result));
+      return MediaResponse.urlSearchParams(response);
     }
 
     // The response has unsupported data
@@ -296,51 +445,62 @@ export async function fetchMedia(
 
       // It's a problem
       if (errorContentType.startsWith(MEDIA_PROBLEM)) {
-        return responseOrError.json().then((response_1) => {
-          return Promise.reject(new Problem(responseOrError, response_1));
+        return responseOrError.json().then((responseWithProblem: unknown) => {
+          return MediaResponse.error(
+            new Problem(responseOrError, responseWithProblem),
+            responseOrError
+          );
         });
       }
 
       // It's a structured error
       if (CUSTOM_ERROR.test(errorContentType)) {
-        return responseOrError.json().then((response_2) => {
-          return Promise.reject(
-            new StructuredErrors(responseOrError, response_2)
+        return responseOrError.json().then((responseWithError: unknown) => {
+          return MediaResponse.error(
+            new StructuredErrors(responseOrError, responseWithError),
+            responseOrError
           );
         });
       }
 
       // It's a generic json error
       if (errorContentType.startsWith(MEDIA_JSON)) {
-        return responseOrError.json().then((response_3) => {
+        return responseOrError.json().then((responseWithJson: any) => {
           // Test if it can be coerced into a structured error
           if (
-            typeof response_3 === 'object' &&
-            response_3 !== null &&
-            response_3.hasOwnProperty('errors') &&
-            Array.isArray(response_3['errors']) &&
-            (response_3['errors'].length === 0 ||
-              (typeof response_3['errors'][0] === 'object' &&
-                response_3['errors'][0] !== null &&
-                response_3['errors'][0].hasOwnProperty('message')))
+            typeof responseWithJson === 'object' &&
+            responseWithJson !== null &&
+            responseWithJson.hasOwnProperty('errors') &&
+            Array.isArray(responseWithJson['errors']) &&
+            (responseWithJson['errors'].length === 0 ||
+              (typeof responseWithJson['errors'][0] === 'object' &&
+                responseWithJson['errors'][0] !== null &&
+                responseWithJson['errors'][0].hasOwnProperty('message')))
           ) {
-            return Promise.reject(
-              new StructuredErrors(responseOrError, response_3)
+            return MediaResponse.error(
+              new StructuredErrors(responseOrError, responseWithJson),
+              responseOrError
             );
           }
 
-          return Promise.reject(new JsonError(responseOrError, response_3));
+          return MediaResponse.error(
+            new JsonError(responseOrError, responseWithJson),
+            responseOrError
+          );
         });
       }
 
       if (errorContentType.startsWith(MEDIA_TEXT_GROUP)) {
-        return responseOrError.text().then((response_4) => {
-          return Promise.reject(new TextError(responseOrError, response_4));
+        return responseOrError.text().then((responseWithText) => {
+          return MediaResponse.error(
+            new TextError(responseOrError, responseWithText),
+            responseOrError
+          );
         });
       }
 
       // It's an error-response but not machine readable
-      return Promise.reject(
+      return MediaResponse.error(
         new MediaTypeUnsupported(
           url,
           responseOrError,
@@ -349,7 +509,8 @@ export async function fetchMedia(
             ACCEPT_PROBLEM,
           ].join(', '),
           errorContentType
-        )
+        ),
+        responseOrError
       );
     }
     return Promise.reject(
@@ -377,173 +538,4 @@ function encodeBody(
   }
 
   return data;
-}
-
-export class FetchMediaError extends Error {
-  constructor(message: string, public readonly response: Response) {
-    super(message);
-
-    Object.setPrototypeOf(this, FetchMediaError.prototype);
-  }
-}
-
-/**
- * When using fetch-media, the response is automatically parsed based on its
- * Content-Type. If the response has no Content-Type, then the response can not
- * be parsed.
- *
- * Catch this error and use the response property to manually handle such
- * responses.
- */
-export class NoResponseContentType extends FetchMediaError {
-  constructor(public readonly url: string, response: Response) {
-    super(
-      `
-      A request to ${url} yielded a response (${response.status}: ${response.statusText}) without a Content-Type.
-    `,
-      response
-    );
-
-    Object.setPrototypeOf(this, NoResponseContentType.prototype);
-  }
-}
-
-/**
- * When using fetch-media, the request can include a body that automatically is
- * converted to the correct format. In order for this to work, you MUST always
- * include a Content-Type in the request, when passing in a body. Here are the
- * common types supported:
- *
- * - String           : text/*
- * - StructuredData   : application/json application/vnd.<vendor>*+json
- * - Blob             : image/* video/* audio/* application/*
- * - BufferSource     : image/* video/* audio/* application/*
- * - FormData         : multipart/form-data
- * - URLSearchParams  : application/x-www-form-urlencoded
- * - ReadableStream<Uint8Array> : image/* video/* audio/* application/*
- *
- * Note that this is the list of types for content types when SENDING data. When
- * receiving data, currently it only automatically handles text, FormData, JSON,
- * URL Encoded data and binary, where all binary types are converted to
- * ArrayBuffer or Blob.
- */
-export class NoRequestContentType extends FetchMediaError {
-  constructor(public readonly url: string, response: Response) {
-    super(
-      `
-      A request to ${url} wanted to include a body, but a Content-Type has not been given. Add a Content-Type.
-    `,
-      response
-    );
-
-    Object.setPrototypeOf(this, NoResponseContentType.prototype);
-  }
-}
-
-/**
- * When using fetch-media, the response can include a body that automatically is
- * converted from the correct format. In order for this to work, the response
- * MUST always include a Content-Type in the response, when a body is present.
- * Here are the common types supported:
- *
- * - text/*                                           : .text()
- * - application/json application/vnd.<vendor>*+json  : .json()
- * - image/* video/* audio/* application/octet-stream : .arrayBuffer() / .blob()
- * - multipart/form-data                              : .formData()
- * - application/x-www-form-urlencoded                : new URLSearchParams()
- *
- * Note that this is the list of types for content types when RECEIVING data.
- * When sending data, it follows the limitations of fetch, but also converts
- * structured data to a JSON string.
- */
-export class MediaTypeUnsupported extends FetchMediaError {
-  constructor(
-    public readonly url: string,
-    response: Response,
-    public readonly accept: string,
-    public readonly contentType: string
-  ) {
-    super(
-      `
-      A request to ${url} yielded a response (${response.status}: ${response.statusText})
-      with a Content-Type that is unsupported. The original request expected:
-
-      ${accept}
-
-      The final response reports as ${contentType}.
-    `,
-      response
-    );
-
-    Object.setPrototypeOf(this, MediaTypeUnsupported.prototype);
-  }
-}
-
-export class JsonError extends FetchMediaError {
-  constructor(response: Response, public readonly data: any) {
-    super(JsonError.getError(data), response);
-
-    Object.setPrototypeOf(this, JsonError.prototype);
-  }
-
-  private static getError(data: any): string {
-    // Common error keys
-    const result =
-      data['message'] ||
-      data['error'] ||
-      data['details'] ||
-      data['title'] ||
-      data['errors'];
-    if (!result) {
-      return `Tried to extract error from JSON, looking for 'message', 'error', 'details', 'title' and 'errors, buy found ${Object.keys(
-        data
-      )}.`;
-    }
-
-    if (Array.isArray(result)) {
-      return result.join(', ');
-    }
-
-    return result;
-  }
-}
-
-export class StructuredErrors extends FetchMediaError {
-  constructor(response: Response, public readonly data: any) {
-    super(StructuredErrors.getError(data), response);
-
-    Object.setPrototypeOf(this, StructuredErrors.prototype);
-  }
-
-  private static getError(data: any): string {
-    return data['errors']
-      .map(({ message }: { message: string }) => message)
-      .join(', ');
-  }
-}
-
-export class Problem extends FetchMediaError {
-  constructor(response: Response, public readonly data: any) {
-    super(Problem.getError(data), response);
-
-    Object.setPrototypeOf(this, Problem.prototype);
-  }
-
-  private static getError(data: any): string {
-    return data.detail;
-  }
-}
-
-export class TextError extends FetchMediaError {
-  constructor(response: Response, public readonly data: string) {
-    super(TextError.getError(response, data), response);
-
-    Object.setPrototypeOf(this, TextError.prototype);
-  }
-
-  private static getError(response: Response, data: string): string {
-    return `[${response.status}] ${response.url}
-    Expected a structured error or problem, but got text:
-    ${data}`;
-  }
 }

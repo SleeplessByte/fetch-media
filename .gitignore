@@ -1,6 +1,12 @@
-node_modules
+/node_modules
 
-index.*
-!index.ts
-!index.test.tsx
+/*.js
+/*.d.ts
+/*.d.ts.map
+!/babel.config.js
+!/.eslintrc.js
+!/jest.config.js
+
+!/index.ts
+!/index.test.tsx
 tsconfig.tsbuildinfo
