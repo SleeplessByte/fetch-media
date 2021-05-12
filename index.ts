@@ -8,6 +8,18 @@ import { Problem } from './Problem';
 import { StructuredErrors } from './StructuredErrors';
 import { TextError } from './TextError';
 
+export {
+  JsonError,
+  MediaTypeUnsupported,
+  NoRequestContentType,
+  NoResponseContentType,
+  Problem,
+  StructuredErrors,
+  TextError,
+};
+
+export { FetchMediaError } from './FetcMediaError';
+
 export const MEDIA_PROBLEM = 'application/problem+json';
 export const MEDIA_JSON_SUFFIX = '+json';
 export const MEDIA_JSON = 'application/json';

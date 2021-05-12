@@ -11,3 +11,6 @@
 /CHANGELOG.md
 /jest.config.js
 /tsconfig.json
+/*.ts
+!/*.d.ts
+!/*.d.ts.map
