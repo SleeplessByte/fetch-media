@@ -1,16 +1,14 @@
 {
   "name": "fetch-media",
-  "version": "2.0.0-rc4",
+  "version": "2.0.0-rc5",
   "description": "Utility function that uses fetch to fetch a media-enabled resource",
-  "main": "index.cjs.js",
-  "module": "index.es.js",
+  "main": "index.js",
   "types": "index.d.ts",
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "yarn build:main && yarn build:module && yarn build:dts",
-    "build:main": "rimraf dist && yarn ncc build index.ts -o dist --target es3 && move .\\dist\\index.js index.cjs.js",
-    "build:module": "yarn tsc --module es2015 && move .\\index.js .\\index.es.js",
+    "build": "yarn build:module && yarn build:dts",
+    "build:module": "yarn tsc --module es2015",
     "build:dts": "yarn tsc --declaration --declarationMap --emitDeclarationOnly",
     "prepare": "yarn build"
   },
@@ -24,7 +22,6 @@
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
-    "@vercel/ncc": "^0.28.5",
     "babel-jest": "^26.6.3",
     "eslint": "^7.20.0",
     "eslint-config-universe": "^7.0.1",
