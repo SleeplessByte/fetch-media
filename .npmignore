@@ -1,5 +1,3 @@
-/dist
-/index.cjs.js
 /node_modules
 /.eslintignore
 /.eslintrc.js
@@ -11,6 +9,3 @@
 /CHANGELOG.md
 /jest.config.js
 /tsconfig.json
-/*.ts
-!/*.d.ts
-!/*.d.ts.map

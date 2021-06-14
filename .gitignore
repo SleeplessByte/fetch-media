@@ -10,3 +10,5 @@
 !/index.ts
 !/index.test.tsx
 tsconfig.tsbuildinfo
+
+/dist
