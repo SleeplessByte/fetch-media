@@ -8,6 +8,14 @@ Utility function that uses fetch to fetch a media-enabled resource
 yarn add fetch-media
 ```
 
+If you're using `react-native`, this will use the unbundled source _TypeScript_. As such, the normally rolled-up dependency `@ungap/url-search-params` isn't available.
+
+You **must** install this dependency.
+
+```bash
+yarn add @ungap/url-search-params
+```
+
 ## Usage
 
 ```typescript
