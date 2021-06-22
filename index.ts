@@ -49,14 +49,29 @@ export function setDefaultHeaders(headers: Record<string, string>) {
 
 interface KnownHeaders {
   accept: string;
+  acceptLanguage: string;
   authorization: string;
   contentType: string;
   cacheControl: string;
+  etag: string;
+  ifMatch: string;
+  ifNoneMatch: string;
+  ifModifiedSince: string;
+  ifUnmodifiedSince: string;
+  userAgent: string;
 }
 
 function remapHeaders(headers: Partial<KnownHeaders>): Record<string, string> {
   return Object.keys(headers).reduce((result, header) => {
-    const mapped = header.replace(/[A-Z]/g, (m) => '-' + m.toLocaleLowerCase());
+    // contentType -> content-type
+    // content-type -> content-type
+    // Content-Type -> Content-Type
+    // accept -> accept
+    // Accept -> Accept
+    const mapped =
+      isUpperCase(header[0]) || header.includes('-')
+        ? header
+        : header.replace(/[A-Z]/g, (m) => '-' + m.toLocaleLowerCase());
     const value = headers[header as keyof KnownHeaders];
     if (value) {
       result[mapped] = value;
@@ -65,7 +80,14 @@ function remapHeaders(headers: Partial<KnownHeaders>): Record<string, string> {
   }, {} as Record<string, string>);
 }
 
-type MediaHeaders = Partial<KnownHeaders> & Pick<KnownHeaders, 'accept'>;
+function isUpperCase(value: string): boolean {
+  const letter = value[0];
+  return letter.toLocaleUpperCase() === letter;
+}
+
+type MediaHeaders = Partial<KnownHeaders> &
+  Pick<KnownHeaders, 'accept'> &
+  Partial<Record<Exclude<string, keyof KnownHeaders>, string>>;
 type MediaMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS';
 type MediaOptions = {
   /**
