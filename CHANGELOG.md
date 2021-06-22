@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+
+- Fix `MediaHeaders` type
+- Add more headers to `KnownHeaders`
+- Add more rules to remapping headers
+
 ## 2.0.0
 
 - Add `fetchMediaWrapped`
