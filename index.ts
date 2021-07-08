@@ -477,6 +477,22 @@ export async function fetchMediaWrapped(
         contentType: errorContentType,
       });
 
+      // Can't read it. Bail early
+      if (!errorContentType) {
+        return MediaResponse.error(
+          new MediaTypeUnsupported(
+            url,
+            responseOrError,
+            [
+              'application/vnd.<vendor>.errors[.v<version>]+json',
+              ACCEPT_PROBLEM,
+            ].join(', '),
+            errorContentType
+          ),
+          responseOrError
+        );
+      }
+
       // It's a problem
       if (errorContentType.startsWith(MEDIA_PROBLEM)) {
         return responseOrError.json().then((responseWithProblem: unknown) => {

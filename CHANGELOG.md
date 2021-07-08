@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1
+
+- Fix responses that are errors without `content-type`.
+
 ## 2.1.0
 
 - Fix `MediaHeaders` type

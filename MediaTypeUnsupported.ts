@@ -25,12 +25,14 @@ export class MediaTypeUnsupported extends FetchMediaError {
   ) {
     super(
       `
-      A request to ${url} yielded a response (${response.status}: ${response.statusText})
+      A request to ${url} yielded a response (${response.status}: ${
+        response.statusText
+      })
       with a Content-Type that is unsupported. The original request expected:
 
       ${accept}
 
-      The final response reports as ${contentType}.
+      The final response reports as ${contentType || '<none>'}.
     `,
       response
     );
