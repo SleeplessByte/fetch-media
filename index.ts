@@ -35,6 +35,10 @@ export const CUSTOM_ERROR =
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
+// const Request = (globalThis ?? window).Request
+const Response = (globalThis ?? window).Response;
+const fetch = (globalThis ?? window).fetch;
+
 const AcceptRef: { current: readonly string[] } = { current: [ACCEPT_PROBLEM] };
 const HeadersRef: { current: Readonly<Record<string, string>> } = {
   current: {},
@@ -393,7 +397,7 @@ export async function fetchMediaWrapped(
   }
 
   try {
-    const response = await (globalThis ?? window).fetch(url, {
+    const response = await fetch(url, {
       headers,
       method,
       body: encodeBody(body, contentType, debug),

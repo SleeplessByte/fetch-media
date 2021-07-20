@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.3
+
+- Use `Response` from `globalThis` or `window` instead of ambient global.
+
 ## 2.1.2
 
 - Use fetch from `globalThis` or `window` instead of ambient global.
