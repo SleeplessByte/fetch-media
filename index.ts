@@ -30,7 +30,8 @@ export const MEDIA_AUDIO_GROUP = 'audio/';
 export const MEDIA_VIDEO_GROUP = 'video/';
 export const MEDIA_FORM_DATA = 'multipart/form-data';
 export const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
-export const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
+export const CUSTOM_ERROR =
+  /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
@@ -392,7 +393,7 @@ export async function fetchMediaWrapped(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await (globalThis ?? window).fetch(url, {
       headers,
       method,
       body: encodeBody(body, contentType, debug),
