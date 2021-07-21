@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.5
+
+- Remove not working / emitted modern export
+
 ## 2.1.4
 
 - Use `.js` extension instead of `.mjs`.
