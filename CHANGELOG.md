@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.4
+
+- Use `.js` extension instead of `.mjs`.
+
 ## 2.1.3
 
 - Use `Response` from `globalThis` or `window` instead of ambient global.
