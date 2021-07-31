@@ -35,9 +35,10 @@ export const CUSTOM_ERROR =
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
-// const Request = (globalThis ?? window).Request
-const Response = (globalThis ?? window).Response;
-const fetch = (globalThis ?? window).fetch;
+const actualThis = typeof globalThis === 'undefined' ? window : globalThis;
+// const Request = actualThis.Request
+const Response = actualThis.Response;
+const fetch = actualThis.fetch;
 
 const AcceptRef: { current: readonly string[] } = { current: [ACCEPT_PROBLEM] };
 const HeadersRef: { current: Readonly<Record<string, string>> } = {

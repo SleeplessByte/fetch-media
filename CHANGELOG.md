@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.6
+
+- Fix issue with some environments where `globalThis` is not declared.
+
 ## 2.1.5
 
 - Remove not working / emitted modern export
