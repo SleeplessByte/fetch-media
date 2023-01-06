@@ -475,6 +475,14 @@ export async function fetchMediaWrapped(
 
     if (isResponseLike(responseOrError)) {
       const errorContentType = responseOrError.headers.get('content-type')!;
+      const safeResponse =
+        responseOrError instanceof Response
+          ? responseOrError
+          : {
+              status: (responseOrError as Response).status,
+              statusText: (responseOrError as Response).statusText,
+              url: (responseOrError as Response).url,
+            };
 
       after?.({
         url: responseOrError.url,
@@ -488,39 +496,33 @@ export async function fetchMediaWrapped(
         return MediaResponse.error(
           new MediaTypeUnsupported(
             url,
-            responseOrError,
+            safeResponse,
             [
               'application/vnd.<vendor>.errors[.v<version>]+json',
               ACCEPT_PROBLEM,
             ].join(', '),
             errorContentType
           ),
-          responseOrError
+          safeResponse
         );
-      }
-
-      // It's a problem
-      if (errorContentType.startsWith(MEDIA_PROBLEM)) {
+      } else if (errorContentType.startsWith(MEDIA_PROBLEM)) {
+        // It's a problem
         const responseWithProblem = await responseOrError.json();
 
         return MediaResponse.error(
-          new Problem(responseOrError, responseWithProblem),
-          responseOrError
+          new Problem(safeResponse, responseWithProblem),
+          safeResponse
         );
-      }
-
-      // It's a structured error
-      if (CUSTOM_ERROR.test(errorContentType)) {
+      } else if (CUSTOM_ERROR.test(errorContentType)) {
+        // It's a structured error
         const responseWithError = await responseOrError.json();
 
         return MediaResponse.error(
-          new StructuredErrors(responseOrError, responseWithError),
-          responseOrError
+          new StructuredErrors(safeResponse, responseWithError),
+          safeResponse
         );
-      }
-
-      // It's a generic json error
-      if (errorContentType.startsWith(MEDIA_JSON)) {
+      } else if (errorContentType.startsWith(MEDIA_JSON)) {
+        // It's a generic json error
         const responseWithJson = await responseOrError.json();
         // Test if it can be coerced into a structured error
         if (
@@ -534,40 +536,40 @@ export async function fetchMediaWrapped(
               responseWithJson['errors'][0].hasOwnProperty('message')))
         ) {
           return MediaResponse.error(
-            new StructuredErrors(responseOrError, responseWithJson),
-            responseOrError
+            new StructuredErrors(safeResponse, responseWithJson),
+            safeResponse
           );
         }
 
         return MediaResponse.error(
-          new JsonError(responseOrError, responseWithJson),
-          responseOrError
+          new JsonError(safeResponse, responseWithJson),
+          safeResponse
         );
-      }
-
-      if (errorContentType.startsWith(MEDIA_TEXT_GROUP)) {
+      } else if (errorContentType.startsWith(MEDIA_TEXT_GROUP)) {
+        // It's a generic text error
         const responseWithText = await responseOrError.text();
 
         return MediaResponse.error(
-          new TextError(responseOrError, responseWithText),
-          responseOrError
+          new TextError(safeResponse, responseWithText),
+          safeResponse
+        );
+      } else {
+        // It's an error-response but not machine readable
+        return MediaResponse.error(
+          new MediaTypeUnsupported(
+            url,
+            safeResponse,
+            [
+              'application/vnd.<vendor>.errors[.v<version>]+json',
+              ACCEPT_PROBLEM,
+            ].join(', '),
+            errorContentType
+          ),
+          safeResponse
         );
       }
-
-      // It's an error-response but not machine readable
-      return MediaResponse.error(
-        new MediaTypeUnsupported(
-          url,
-          responseOrError,
-          [
-            'application/vnd.<vendor>.errors[.v<version>]+json',
-            ACCEPT_PROBLEM,
-          ].join(', '),
-          errorContentType
-        ),
-        responseOrError
-      );
     }
+
     return Promise.reject(
       new Error(
         `Unknown issue occurred. Not an Error or Response, but ${responseOrError}`
@@ -601,10 +603,9 @@ function isResponseLike(response: unknown): response is Response {
   }
 
   return (
-    Object.prototype.hasOwnProperty.call(response, 'headers') &&
-    Object.prototype.hasOwnProperty.call(response, 'status') &&
-    Object.prototype.hasOwnProperty.call(response, 'statusText') &&
-    Object.prototype.hasOwnProperty.call(response, 'json') &&
+    typeof (response as any).headers === 'object' &&
+    typeof (response as any).status === 'number' &&
+    typeof (response as any).statusText === 'string' &&
     typeof (response as any).json === 'function'
   );
 }

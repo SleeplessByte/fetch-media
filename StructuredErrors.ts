@@ -1,7 +1,10 @@
 import { FetchMediaError } from './FetcMediaError';
 
 export class StructuredErrors extends FetchMediaError {
-  constructor(response: Response, public readonly data: any) {
+  constructor(
+    response: Response | { status: number; statusText: string; url: string },
+    public readonly data: any
+  ) {
     super(StructuredErrors.getError(data), response);
 
     Object.setPrototypeOf(this, StructuredErrors.prototype);

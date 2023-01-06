@@ -19,7 +19,7 @@ import { FetchMediaError } from './FetcMediaError';
 export class MediaTypeUnsupported extends FetchMediaError {
   constructor(
     public readonly url: string,
-    response: Response,
+    response: Response | { status: number; statusText: string; url: string },
     public readonly accept: string,
     public readonly contentType: string
   ) {

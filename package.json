@@ -1,6 +1,6 @@
 {
   "name": "fetch-media",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Utility function that uses fetch to fetch a media-enabled resource",
   "type": "module",
   "main": "./dist/index.cjs",

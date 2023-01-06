@@ -1,7 +1,10 @@
 import { FetchMediaError } from './FetcMediaError';
 
 export class JsonError extends FetchMediaError {
-  constructor(response: Response, public readonly data: any) {
+  constructor(
+    response: Response | { status: number; statusText: string; url: string },
+    public readonly data: any
+  ) {
     super(JsonError.getError(data), response);
 
     Object.setPrototypeOf(this, JsonError.prototype);
