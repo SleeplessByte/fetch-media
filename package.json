@@ -1,6 +1,6 @@
 {
   "name": "fetch-media",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Utility function that uses fetch to fetch a media-enabled resource",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -15,10 +15,9 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "prepack": "rimraf dist",
+    "prepack": "rimraf dist && yarn build",
     "build": "microbundle",
-    "watch": "microbundle watch",
-    "pack": "yarn build"
+    "watch": "microbundle watch"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",

@@ -12,6 +12,7 @@
 tsconfig.tsbuildinfo
 
 /dist
+/package.tgz
 
 .pnp.*
 .yarn/*
