@@ -13,46 +13,42 @@ export class MediaResponse<
     | URLSearchParams
     | FetchMediaError
 > {
-  public static text(response: Response): Promise<MediaResponse<string>> {
-    return response
-      .text()
-      .then((result) => new MediaResponse(result, response));
+  public static async text(response: Response): Promise<MediaResponse<string>> {
+    const result = await response.text();
+    return new MediaResponse(result, response);
   }
 
-  public static json(response: Response): Promise<MediaResponse<unknown>> {
-    return response
-      .json()
-      .then((result) => new MediaResponse(result as unknown, response));
+  public static async json(
+    response: Response
+  ): Promise<MediaResponse<unknown>> {
+    const result = await response.json();
+    return new MediaResponse(result as unknown, response);
   }
 
-  public static urlSearchParams(
+  public static async urlSearchParams(
     response: Response
   ): Promise<MediaResponse<URLSearchParams>> {
-    return response
-      .text()
-      .then(
-        (result) => new MediaResponse(new URLSearchParams(result), response)
-      );
+    const result = await response.text();
+    return new MediaResponse(new URLSearchParams(result), response);
   }
 
-  public static arrayBuffer(
+  public static async arrayBuffer(
     response: Response
   ): Promise<MediaResponse<ArrayBuffer>> {
-    return response
-      .arrayBuffer()
-      .then((result) => new MediaResponse(result, response));
+    const result = await response.arrayBuffer();
+    return new MediaResponse(result, response);
   }
 
-  public static blob(response: Response): Promise<MediaResponse<Blob>> {
-    return response
-      .blob()
-      .then((result) => new MediaResponse(result, response));
+  public static async blob(response: Response): Promise<MediaResponse<Blob>> {
+    const result = await response.blob();
+    return new MediaResponse(result, response);
   }
 
-  public static formData(response: Response): Promise<MediaResponse<FormData>> {
-    return response
-      .formData()
-      .then((result) => new MediaResponse(result, response));
+  public static async formData(
+    response: Response
+  ): Promise<MediaResponse<FormData>> {
+    const result = await response.formData();
+    return new MediaResponse(result, response);
   }
 
   public static error(

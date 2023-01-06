@@ -2,6 +2,8 @@
 
 Utility function that uses fetch to fetch a media-enabled resource
 
+**Does _not_ work flawlessly with Node 18+ `fetch` because their `Response`class is implemented differently**.
+
 ## Installation
 
 ```bash

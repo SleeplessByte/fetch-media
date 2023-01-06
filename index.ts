@@ -473,7 +473,7 @@ export async function fetchMediaWrapped(
       return Promise.reject(responseOrError);
     }
 
-    if (responseOrError instanceof Response) {
+    if (isResponseLike(responseOrError)) {
       const errorContentType = responseOrError.headers.get('content-type')!;
 
       after?.({
@@ -501,58 +501,57 @@ export async function fetchMediaWrapped(
 
       // It's a problem
       if (errorContentType.startsWith(MEDIA_PROBLEM)) {
-        return responseOrError.json().then((responseWithProblem: unknown) => {
-          return MediaResponse.error(
-            new Problem(responseOrError, responseWithProblem),
-            responseOrError
-          );
-        });
+        const responseWithProblem = await responseOrError.json();
+
+        return MediaResponse.error(
+          new Problem(responseOrError, responseWithProblem),
+          responseOrError
+        );
       }
 
       // It's a structured error
       if (CUSTOM_ERROR.test(errorContentType)) {
-        return responseOrError.json().then((responseWithError: unknown) => {
-          return MediaResponse.error(
-            new StructuredErrors(responseOrError, responseWithError),
-            responseOrError
-          );
-        });
+        const responseWithError = await responseOrError.json();
+
+        return MediaResponse.error(
+          new StructuredErrors(responseOrError, responseWithError),
+          responseOrError
+        );
       }
 
       // It's a generic json error
       if (errorContentType.startsWith(MEDIA_JSON)) {
-        return responseOrError.json().then((responseWithJson: any) => {
-          // Test if it can be coerced into a structured error
-          if (
-            typeof responseWithJson === 'object' &&
-            responseWithJson !== null &&
-            responseWithJson.hasOwnProperty('errors') &&
-            Array.isArray(responseWithJson['errors']) &&
-            (responseWithJson['errors'].length === 0 ||
-              (typeof responseWithJson['errors'][0] === 'object' &&
-                responseWithJson['errors'][0] !== null &&
-                responseWithJson['errors'][0].hasOwnProperty('message')))
-          ) {
-            return MediaResponse.error(
-              new StructuredErrors(responseOrError, responseWithJson),
-              responseOrError
-            );
-          }
-
+        const responseWithJson = await responseOrError.json();
+        // Test if it can be coerced into a structured error
+        if (
+          typeof responseWithJson === 'object' &&
+          responseWithJson !== null &&
+          responseWithJson.hasOwnProperty('errors') &&
+          Array.isArray(responseWithJson['errors']) &&
+          (responseWithJson['errors'].length === 0 ||
+            (typeof responseWithJson['errors'][0] === 'object' &&
+              responseWithJson['errors'][0] !== null &&
+              responseWithJson['errors'][0].hasOwnProperty('message')))
+        ) {
           return MediaResponse.error(
-            new JsonError(responseOrError, responseWithJson),
+            new StructuredErrors(responseOrError, responseWithJson),
             responseOrError
           );
-        });
+        }
+
+        return MediaResponse.error(
+          new JsonError(responseOrError, responseWithJson),
+          responseOrError
+        );
       }
 
       if (errorContentType.startsWith(MEDIA_TEXT_GROUP)) {
-        return responseOrError.text().then((responseWithText) => {
-          return MediaResponse.error(
-            new TextError(responseOrError, responseWithText),
-            responseOrError
-          );
-        });
+        const responseWithText = await responseOrError.text();
+
+        return MediaResponse.error(
+          new TextError(responseOrError, responseWithText),
+          responseOrError
+        );
       }
 
       // It's an error-response but not machine readable
@@ -594,4 +593,18 @@ function encodeBody(
   }
 
   return data;
+}
+
+function isResponseLike(response: unknown): response is Response {
+  if (!response || typeof response !== 'object') {
+    return false;
+  }
+
+  return (
+    Object.prototype.hasOwnProperty.call(response, 'headers') &&
+    Object.prototype.hasOwnProperty.call(response, 'status') &&
+    Object.prototype.hasOwnProperty.call(response, 'statusText') &&
+    Object.prototype.hasOwnProperty.call(response, 'json') &&
+    typeof (response as any).json === 'function'
+  );
 }
