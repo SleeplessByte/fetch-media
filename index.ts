@@ -482,6 +482,7 @@ export async function fetchMediaWrapped(
               status: (responseOrError as Response).status,
               statusText: (responseOrError as Response).statusText,
               url: (responseOrError as Response).url,
+              headers: (responseOrError as Response).headers,
             };
 
       after?.({

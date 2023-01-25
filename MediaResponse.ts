@@ -53,14 +53,18 @@ export class MediaResponse<
 
   public static error(
     error: FetchMediaError,
-    response: Response | { status: number; statusText: string }
+    response:
+      | Response
+      | { status: number; statusText: string; headers: Headers }
   ): MediaResponse<FetchMediaError> {
     return new MediaResponse(error, response);
   }
 
   private constructor(
     public readonly result: T,
-    public readonly response: Response | { status: number; statusText: string }
+    public readonly response:
+      | Response
+      | { status: number; statusText: string; headers: Headers }
   ) {}
 
   public ok(): boolean {
