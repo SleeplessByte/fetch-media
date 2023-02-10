@@ -10,7 +10,7 @@ export class Problem extends FetchMediaError {
     Object.setPrototypeOf(this, Problem.prototype);
   }
 
-  private static getError(data: any): string {
-    return data.detail;
+  private static getError(data: { title: string; detail: string }): string {
+    return [data.title, data.detail].join('\n');
   }
 }
