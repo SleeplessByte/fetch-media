@@ -510,7 +510,7 @@ export async function fetchMediaWrapped(
         );
       } else if (
         errorContentType.startsWith(MEDIA_PROBLEM) ||
-        CUSTOM_PROBLEM.test(MEDIA_PROBLEM)
+        CUSTOM_PROBLEM.test(errorContentType)
       ) {
         // It's a problem
         const responseWithProblem = await responseOrError.json();
