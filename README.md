@@ -2,7 +2,7 @@
 
 Utility function that uses fetch to fetch a media-enabled resource
 
-**Does _not_ work flawlessly with Node 18+ `fetch` because their `Response`class is implemented differently**.
+**Does _not_ work flawlessly with Node 18+ `fetch` because their `Response` class is implemented differently; may or may not work well with libraries that change the global `fetch`**.
 
 ## Installation
 

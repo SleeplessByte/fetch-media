@@ -31,7 +31,9 @@ export const MEDIA_VIDEO_GROUP = 'video/';
 export const MEDIA_FORM_DATA = 'multipart/form-data';
 export const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
 export const CUSTOM_ERROR =
-  /application\/vnd\.(.+?)\.errors(?:\.v1[0-9]*)\+json/;
+  /application\/vnd\.(.+?)\.errors(?:\.v[1-9][0-9]*)\+json/;
+export const CUSTOM_PROBLEM =
+  /application\/vnd\.(.+?)\.problem(?:\.v[1-9][0-9]*)?\+json/;
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
@@ -506,7 +508,10 @@ export async function fetchMediaWrapped(
           ),
           safeResponse
         );
-      } else if (errorContentType.startsWith(MEDIA_PROBLEM)) {
+      } else if (
+        errorContentType.startsWith(MEDIA_PROBLEM) ||
+        CUSTOM_PROBLEM.test(MEDIA_PROBLEM)
+      ) {
         // It's a problem
         const responseWithProblem = await responseOrError.json();
 
@@ -562,6 +567,7 @@ export async function fetchMediaWrapped(
             safeResponse,
             [
               'application/vnd.<vendor>.errors[.v<version>]+json',
+              'application/vnd.<vendor>.problem+json',
               ACCEPT_PROBLEM,
             ].join(', '),
             errorContentType
