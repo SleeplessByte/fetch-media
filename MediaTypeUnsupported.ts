@@ -1,4 +1,5 @@
 import { FetchMediaError } from './FetchMediaError';
+import type { CompatibleResponse } from './MediaResponse';
 
 /**
  * When using fetch-media, the response can include a body that automatically is
@@ -19,7 +20,7 @@ import { FetchMediaError } from './FetchMediaError';
 export class MediaTypeUnsupported extends FetchMediaError {
   constructor(
     public readonly url: string,
-    response: Response | { status: number; statusText: string; url: string },
+    response: CompatibleResponse | { status: number; statusText: string; url: string },
     public readonly accept: string,
     public readonly contentType: string
   ) {

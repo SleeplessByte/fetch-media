@@ -1,4 +1,5 @@
 import { FetchMediaError } from './FetchMediaError';
+import type { CompatibleResponse } from './MediaResponse';
 
 /**
  * When using fetch-media, the response is automatically parsed based on its
@@ -11,7 +12,7 @@ import { FetchMediaError } from './FetchMediaError';
 export class NoResponseContentType extends FetchMediaError {
   constructor(
     public readonly url: string,
-    response: Response
+    response: CompatibleResponse
   ) {
     super(
       `

@@ -2,6 +2,8 @@ import URLSearchParams from '@ungap/url-search-params';
 
 import { FetchMediaError } from './FetchMediaError';
 
+export type CompatibleResponse = Omit<Response, 'bytes' | 'clone'> & { bytes?: Response['bytes'] };
+
 export class MediaResponse<
   T extends
     | unknown
@@ -13,46 +15,52 @@ export class MediaResponse<
     | URLSearchParams
     | FetchMediaError,
 > {
-  public static async text(response: Response): Promise<MediaResponse<string>> {
+  public static async text(response: CompatibleResponse): Promise<MediaResponse<string>> {
     const result = await response.text();
     return new MediaResponse(result, response);
   }
 
-  public static async json(response: Response): Promise<MediaResponse<unknown>> {
+  public static async json(response: CompatibleResponse): Promise<MediaResponse<unknown>> {
     const result = await response.json();
     return new MediaResponse(result as unknown, response);
   }
 
-  public static async urlSearchParams(response: Response): Promise<MediaResponse<URLSearchParams>> {
+  public static async urlSearchParams(
+    response: CompatibleResponse
+  ): Promise<MediaResponse<URLSearchParams>> {
     const result = await response.text();
     return new MediaResponse(new URLSearchParams(result), response);
   }
 
-  public static async arrayBuffer(response: Response): Promise<MediaResponse<ArrayBuffer>> {
+  public static async arrayBuffer(
+    response: CompatibleResponse
+  ): Promise<MediaResponse<ArrayBuffer>> {
     const result = await response.arrayBuffer();
     return new MediaResponse(result, response);
   }
 
-  public static async blob(response: Response): Promise<MediaResponse<Blob>> {
+  public static async blob(response: CompatibleResponse): Promise<MediaResponse<Blob>> {
     const result = await response.blob();
     return new MediaResponse(result, response);
   }
 
-  public static async formData(response: Response): Promise<MediaResponse<FormData>> {
+  public static async formData(response: CompatibleResponse): Promise<MediaResponse<FormData>> {
     const result = await response.formData();
     return new MediaResponse(result, response);
   }
 
   public static error(
     error: FetchMediaError,
-    response: Response | { status: number; statusText: string; headers: Headers }
+    response: CompatibleResponse | { status: number; statusText: string; headers: Headers }
   ): MediaResponse<FetchMediaError> {
     return new MediaResponse(error, response);
   }
 
   private constructor(
     public readonly result: T,
-    public readonly response: Response | { status: number; statusText: string; headers: Headers }
+    public readonly response:
+      | CompatibleResponse
+      | { status: number; statusText: string; headers: Headers }
   ) {}
 
   public ok(): boolean {

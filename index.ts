@@ -1,5 +1,5 @@
 import { JsonError } from './JsonError';
-import { MediaResponse } from './MediaResponse';
+import { type CompatibleResponse, MediaResponse } from './MediaResponse';
 import { MediaTypeUnsupported } from './MediaTypeUnsupported';
 import { NoRequestContentType } from './NoRequestContentType';
 import { NoResponseContentType } from './NoResponseContentType';
@@ -39,13 +39,11 @@ type CompatibleRequestInit = Omit<
   RequestInit,
   'body' | 'cache' | 'signal' | 'priority' | 'redirect' | 'referrerPolicy' | 'window'
 > & { body?: BodyInit; signal?: AbortSignal; window?: any };
-
 type CompatibleFetch = (
   url: string,
-
   // Only keeping the ones used here
   init?: Pick<CompatibleRequestInit, 'headers' | 'body' | 'method' | 'signal'>
-) => Promise<Response>;
+) => Promise<CompatibleResponse>;
 
 const actualThis = typeof globalThis === 'undefined' ? window : globalThis;
 // const Request = actualThis.Request

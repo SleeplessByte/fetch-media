@@ -1,4 +1,5 @@
 import { FetchMediaError } from './FetchMediaError';
+import type { CompatibleResponse } from './MediaResponse';
 
 /**
  * When using fetch-media, the request can include a body that automatically is
@@ -22,7 +23,7 @@ import { FetchMediaError } from './FetchMediaError';
 export class NoRequestContentType extends FetchMediaError {
   constructor(
     public readonly url: string,
-    response: Response
+    response: CompatibleResponse
   ) {
     super(
       `

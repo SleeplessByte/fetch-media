@@ -1,8 +1,9 @@
 import { FetchMediaError } from './FetchMediaError';
+import type { CompatibleResponse } from './MediaResponse';
 
 export class TextError extends FetchMediaError {
   constructor(
-    response: Response | { status: number; statusText: string; url: string },
+    response: CompatibleResponse | { status: number; statusText: string; url: string },
     public readonly data: string
   ) {
     super(TextError.getError(response, data), response);
