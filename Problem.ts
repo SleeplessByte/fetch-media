@@ -1,4 +1,4 @@
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 export class Problem extends FetchMediaError {
   constructor(

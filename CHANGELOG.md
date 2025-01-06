@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.3.0
+
+- Update dependencies
+- Allow providing fetch implementation
+
+## 3.2.0
+
+## 3.1.0
+
+## 3.0.0
+
 ## 2.1.6
 
 - Fix issue with some environments where `globalThis` is not declared.

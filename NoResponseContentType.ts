@@ -1,4 +1,4 @@
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 /**
  * When using fetch-media, the response is automatically parsed based on its
@@ -9,7 +9,10 @@ import { FetchMediaError } from './FetcMediaError';
  * responses.
  */
 export class NoResponseContentType extends FetchMediaError {
-  constructor(public readonly url: string, response: Response) {
+  constructor(
+    public readonly url: string,
+    response: Response
+  ) {
     super(
       `
       A request to ${url} yielded a response (${response.status}: ${response.statusText}) without a Content-Type.

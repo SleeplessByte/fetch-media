@@ -9,6 +9,7 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/no-redeclare': 0,
+    'prettier/prettier': 0
   },
   overrides: [
     {

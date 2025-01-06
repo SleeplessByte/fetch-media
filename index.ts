@@ -1,6 +1,5 @@
-import { MediaResponse } from './MediaResponse';
-
 import { JsonError } from './JsonError';
+import { MediaResponse } from './MediaResponse';
 import { MediaTypeUnsupported } from './MediaTypeUnsupported';
 import { NoRequestContentType } from './NoRequestContentType';
 import { NoResponseContentType } from './NoResponseContentType';
@@ -18,7 +17,7 @@ export {
   TextError,
 };
 
-export { FetchMediaError } from './FetcMediaError';
+export { FetchMediaError } from './FetchMediaError';
 
 export const MEDIA_PROBLEM = 'application/problem+json';
 export const MEDIA_JSON_SUFFIX = '+json';
@@ -30,17 +29,15 @@ export const MEDIA_AUDIO_GROUP = 'audio/';
 export const MEDIA_VIDEO_GROUP = 'video/';
 export const MEDIA_FORM_DATA = 'multipart/form-data';
 export const MEDIA_FORM_URL_ENCODED = 'application/x-www-form-urlencoded';
-export const CUSTOM_ERROR =
-  /application\/vnd\.(.+?)\.errors(?:\.v[1-9][0-9]*)\+json/;
-export const CUSTOM_PROBLEM =
-  /application\/vnd\.(.+?)\.problem(?:\.v[1-9][0-9]*)?\+json/;
+export const CUSTOM_ERROR = /application\/vnd\.(.+?)\.errors(?:\.v[1-9][0-9]*)\+json/;
+export const CUSTOM_PROBLEM = /application\/vnd\.(.+?)\.problem(?:\.v[1-9][0-9]*)?\+json/;
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
 const actualThis = typeof globalThis === 'undefined' ? window : globalThis;
 // const Request = actualThis.Request
 const Response = actualThis.Response;
-const fetch = actualThis.fetch;
+const globalFetch = actualThis.fetch;
 
 const AcceptRef: { current: readonly string[] } = { current: [ACCEPT_PROBLEM] };
 const HeadersRef: { current: Readonly<Record<string, string>> } = {
@@ -70,22 +67,25 @@ interface KnownHeaders {
 }
 
 function remapHeaders(headers: Partial<KnownHeaders>): Record<string, string> {
-  return Object.keys(headers).reduce((result, header) => {
-    // contentType -> content-type
-    // content-type -> content-type
-    // Content-Type -> Content-Type
-    // accept -> accept
-    // Accept -> Accept
-    const mapped =
-      isUpperCase(header[0]) || header.includes('-')
-        ? header
-        : header.replace(/[A-Z]/g, (m) => '-' + m.toLocaleLowerCase());
-    const value = headers[header as keyof KnownHeaders];
-    if (value) {
-      result[mapped] = value;
-    }
-    return result;
-  }, {} as Record<string, string>);
+  return Object.keys(headers).reduce(
+    (result, header) => {
+      // contentType -> content-type
+      // content-type -> content-type
+      // Content-Type -> Content-Type
+      // accept -> accept
+      // Accept -> Accept
+      const mapped =
+        isUpperCase(header[0]) || header.includes('-')
+          ? header
+          : header.replace(/[A-Z]/g, (m) => '-' + m.toLocaleLowerCase());
+      const value = headers[header as keyof KnownHeaders];
+      if (value) {
+        result[mapped] = value;
+      }
+      return result;
+    },
+    {} as Record<string, string>
+  );
 }
 
 function isUpperCase(value: string): boolean {
@@ -152,6 +152,11 @@ type MediaOptions = {
    * If false, raises when binary is returned
    */
   handleBinary?: false | 'array-buffer' | 'blob';
+
+  /**
+   * If given, uses this to fetch instead of the global fetch
+   */
+  fetch?: typeof globalFetch;
 };
 
 type MediaRequestBag = Pick<MediaOptions, 'method'> &
@@ -180,25 +185,20 @@ const DEBUG_BEFORE = ({
 }: MediaRequestBag): void => {
   debug(`${method} ${url}`);
   debug('> accept', accept);
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   (contentType || encodedBody) && debug('> body of', contentType);
   debug('> headers', headers);
   encodedBody && debug('> body', encodedBody);
 };
 
-const DEBUG_AFTER = ({
-  status,
-  url,
-  contentType,
-  headers,
-}: MediaResponseBag): void => {
+const DEBUG_AFTER = ({ status, url, contentType, headers }: MediaResponseBag): void => {
   debug(`< [${status}] ${url}`);
   contentType && debug('< body of', contentType);
 
   const logHeaders: Record<string, string> = {};
 
   headers.forEach(
-    (val, key) =>
-      (logHeaders[key] = logHeaders[key] ? `${logHeaders[key]}, ${val}` : val)
+    (val, key) => (logHeaders[key] = logHeaders[key] ? `${logHeaders[key]}, ${val}` : val)
   );
 
   debug('< headers', logHeaders);
@@ -208,11 +208,7 @@ export async function fetchMedia(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson: true;
     disableText?: false;
@@ -226,11 +222,7 @@ export async function fetchMedia(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson?: false;
     disableText: true;
@@ -244,11 +236,7 @@ export async function fetchMedia(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson?: false;
     disableText?: false;
@@ -293,11 +281,7 @@ export async function fetchMediaWrapped(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson: true;
     disableText?: false;
@@ -311,11 +295,7 @@ export async function fetchMediaWrapped(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson?: false;
     disableText: true;
@@ -329,11 +309,7 @@ export async function fetchMediaWrapped(
   url: string,
   options: Omit<
     MediaOptions,
-    | 'disableJson'
-    | 'disableText'
-    | 'disableFormData'
-    | 'disableFormUrlEncoded'
-    | 'handleBinary'
+    'disableJson' | 'disableText' | 'disableFormData' | 'disableFormUrlEncoded' | 'handleBinary'
   > & {
     disableJson?: false;
     disableText?: false;
@@ -346,11 +322,7 @@ export async function fetchMediaWrapped(
 export async function fetchMediaWrapped(
   url: string,
   options: MediaOptions
-): Promise<
-  MediaResponse<
-    unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams
-  >
->;
+): Promise<MediaResponse<unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams>>;
 
 export async function fetchMediaWrapped(
   url: string,
@@ -374,12 +346,10 @@ export async function fetchMediaWrapped(
     disableFormData,
     disableFormUrlEncoded,
     handleBinary,
+
+    fetch: localFetch = globalFetch,
   }: MediaOptions
-): Promise<
-  MediaResponse<
-    unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams
-  >
-> {
+): Promise<MediaResponse<unknown | string | ArrayBuffer | Blob | FormData | URLSearchParams>> {
   const headers: Record<string, string> = {
     ...HeadersRef.current,
     accept: [accept, AcceptRef.current].join(', '),
@@ -393,14 +363,11 @@ export async function fetchMediaWrapped(
 
   if (body && !contentType && !(body instanceof FormData)) {
     const response = new Response(undefined, { status: 400 });
-    return MediaResponse.error(
-      new NoRequestContentType(url, response),
-      response
-    );
+    return MediaResponse.error(new NoRequestContentType(url, response), response);
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await localFetch(url, {
       headers,
       method,
       body: encodeBody(body, contentType, debug),
@@ -409,17 +376,14 @@ export async function fetchMediaWrapped(
 
     // Forward response to error
     if (!response.ok || response.status >= 400) {
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw response;
     }
 
     // Test for response content
     const responseContentType = response.headers.get('content-type');
     if (!responseContentType) {
-      return MediaResponse.error(
-        new NoResponseContentType(url, response),
-        response
-      );
+      return MediaResponse.error(new NoResponseContentType(url, response), response);
     }
 
     after?.({
@@ -434,12 +398,12 @@ export async function fetchMediaWrapped(
       (!disableJson && responseContentType.includes(MEDIA_JSON_SUFFIX)) ||
       responseContentType.startsWith(MEDIA_JSON)
     ) {
-      return MediaResponse.json(response);
+      return await MediaResponse.json(response);
     }
 
     // The response is text
     if (!disableText && responseContentType.startsWith(MEDIA_TEXT_GROUP)) {
-      return MediaResponse.text(response);
+      return await MediaResponse.text(response);
     }
 
     // The response is binary
@@ -450,29 +414,26 @@ export async function fetchMediaWrapped(
         responseContentType.startsWith(MEDIA_VIDEO_GROUP) ||
         responseContentType.startsWith(MEDIA_GENERIC_BIN))
     ) {
-      return handleBinary === 'array-buffer'
+      return await (handleBinary === 'array-buffer'
         ? MediaResponse.arrayBuffer(response)
-        : MediaResponse.blob(response);
+        : MediaResponse.blob(response));
     }
 
     // The response is form data
     if (!disableFormData && responseContentType.startsWith(MEDIA_FORM_DATA)) {
-      return MediaResponse.formData(response);
+      return await MediaResponse.formData(response);
     }
 
     // The response is url encoded form data (in the body)
-    if (
-      !disableFormUrlEncoded &&
-      responseContentType.startsWith(MEDIA_FORM_URL_ENCODED)
-    ) {
-      return MediaResponse.urlSearchParams(response);
+    if (!disableFormUrlEncoded && responseContentType.startsWith(MEDIA_FORM_URL_ENCODED)) {
+      return await MediaResponse.urlSearchParams(response);
     }
 
     // The response has unsupported data
     throw new MediaTypeUnsupported(url, response, accept, responseContentType);
   } catch (responseOrError) {
     if (responseOrError instanceof Error) {
-      return Promise.reject(responseOrError);
+      return await Promise.reject(responseOrError);
     }
 
     if (isResponseLike(responseOrError)) {
@@ -500,10 +461,7 @@ export async function fetchMediaWrapped(
           new MediaTypeUnsupported(
             url,
             safeResponse,
-            [
-              'application/vnd.<vendor>.errors[.v<version>]+json',
-              ACCEPT_PROBLEM,
-            ].join(', '),
+            ['application/vnd.<vendor>.errors[.v<version>]+json', ACCEPT_PROBLEM].join(', '),
             errorContentType
           ),
           safeResponse
@@ -515,10 +473,7 @@ export async function fetchMediaWrapped(
         // It's a problem
         const responseWithProblem = await responseOrError.json();
 
-        return MediaResponse.error(
-          new Problem(safeResponse, responseWithProblem),
-          safeResponse
-        );
+        return MediaResponse.error(new Problem(safeResponse, responseWithProblem), safeResponse);
       } else if (CUSTOM_ERROR.test(errorContentType)) {
         // It's a structured error
         const responseWithError = await responseOrError.json();
@@ -547,18 +502,12 @@ export async function fetchMediaWrapped(
           );
         }
 
-        return MediaResponse.error(
-          new JsonError(safeResponse, responseWithJson),
-          safeResponse
-        );
+        return MediaResponse.error(new JsonError(safeResponse, responseWithJson), safeResponse);
       } else if (errorContentType.startsWith(MEDIA_TEXT_GROUP)) {
         // It's a generic text error
         const responseWithText = await responseOrError.text();
 
-        return MediaResponse.error(
-          new TextError(safeResponse, responseWithText),
-          safeResponse
-        );
+        return MediaResponse.error(new TextError(safeResponse, responseWithText), safeResponse);
       } else {
         // It's an error-response but not machine readable
         return MediaResponse.error(
@@ -577,27 +526,18 @@ export async function fetchMediaWrapped(
       }
     }
 
-    return Promise.reject(
-      new Error(
-        `Unknown issue occurred. Not an Error or Response, but ${responseOrError}`
-      )
+    return await Promise.reject(
+      new Error(`Unknown issue occurred. Not an Error or Response, but ${responseOrError}`)
     );
   }
 }
 
-function encodeBody(
-  data: any,
-  contentType: string | undefined,
-  debug?: boolean
-) {
+function encodeBody(data: any, contentType: string | undefined, debug?: boolean) {
   if (contentType === undefined) {
     return data;
   }
 
-  if (
-    contentType.includes(MEDIA_JSON_SUFFIX) ||
-    contentType.startsWith(MEDIA_JSON)
-  ) {
+  if (contentType.includes(MEDIA_JSON_SUFFIX) || contentType.startsWith(MEDIA_JSON)) {
     return JSON.stringify(data, undefined, debug ? 2 : undefined);
   }
 

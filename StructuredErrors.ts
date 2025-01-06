@@ -1,4 +1,4 @@
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 export class StructuredErrors extends FetchMediaError {
   constructor(
@@ -11,8 +11,6 @@ export class StructuredErrors extends FetchMediaError {
   }
 
   private static getError(data: any): string {
-    return data['errors']
-      .map(({ message }: { message: string }) => message)
-      .join(', ');
+    return data['errors'].map(({ message }: { message: string }) => message).join(', ');
   }
 }

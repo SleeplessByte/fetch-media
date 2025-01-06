@@ -1,4 +1,4 @@
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 /**
  * When using fetch-media, the request can include a body that automatically is
@@ -20,7 +20,10 @@ import { FetchMediaError } from './FetcMediaError';
  * ArrayBuffer or Blob.
  */
 export class NoRequestContentType extends FetchMediaError {
-  constructor(public readonly url: string, response: Response) {
+  constructor(
+    public readonly url: string,
+    response: Response
+  ) {
     super(
       `
       A request to ${url} wanted to include a body, but a Content-Type has not been given. Add a Content-Type.

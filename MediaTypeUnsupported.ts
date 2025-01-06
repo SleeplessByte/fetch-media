@@ -1,4 +1,4 @@
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 /**
  * When using fetch-media, the response can include a body that automatically is
@@ -25,9 +25,7 @@ export class MediaTypeUnsupported extends FetchMediaError {
   ) {
     super(
       `
-      A request to ${url} yielded a response (${response.status}: ${
-        response.statusText
-      })
+      A request to ${url} yielded a response (${response.status}: ${response.statusText})
       with a Content-Type that is unsupported. The original request expected:
 
       ${accept}

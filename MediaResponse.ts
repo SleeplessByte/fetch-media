@@ -1,6 +1,6 @@
 import URLSearchParams from '@ungap/url-search-params';
 
-import { FetchMediaError } from './FetcMediaError';
+import { FetchMediaError } from './FetchMediaError';
 
 export class MediaResponse<
   T extends
@@ -11,30 +11,24 @@ export class MediaResponse<
     | Blob
     | FormData
     | URLSearchParams
-    | FetchMediaError
+    | FetchMediaError,
 > {
   public static async text(response: Response): Promise<MediaResponse<string>> {
     const result = await response.text();
     return new MediaResponse(result, response);
   }
 
-  public static async json(
-    response: Response
-  ): Promise<MediaResponse<unknown>> {
+  public static async json(response: Response): Promise<MediaResponse<unknown>> {
     const result = await response.json();
     return new MediaResponse(result as unknown, response);
   }
 
-  public static async urlSearchParams(
-    response: Response
-  ): Promise<MediaResponse<URLSearchParams>> {
+  public static async urlSearchParams(response: Response): Promise<MediaResponse<URLSearchParams>> {
     const result = await response.text();
     return new MediaResponse(new URLSearchParams(result), response);
   }
 
-  public static async arrayBuffer(
-    response: Response
-  ): Promise<MediaResponse<ArrayBuffer>> {
+  public static async arrayBuffer(response: Response): Promise<MediaResponse<ArrayBuffer>> {
     const result = await response.arrayBuffer();
     return new MediaResponse(result, response);
   }
@@ -44,27 +38,21 @@ export class MediaResponse<
     return new MediaResponse(result, response);
   }
 
-  public static async formData(
-    response: Response
-  ): Promise<MediaResponse<FormData>> {
+  public static async formData(response: Response): Promise<MediaResponse<FormData>> {
     const result = await response.formData();
     return new MediaResponse(result, response);
   }
 
   public static error(
     error: FetchMediaError,
-    response:
-      | Response
-      | { status: number; statusText: string; headers: Headers }
+    response: Response | { status: number; statusText: string; headers: Headers }
   ): MediaResponse<FetchMediaError> {
     return new MediaResponse(error, response);
   }
 
   private constructor(
     public readonly result: T,
-    public readonly response:
-      | Response
-      | { status: number; statusText: string; headers: Headers }
+    public readonly response: Response | { status: number; statusText: string; headers: Headers }
   ) {}
 
   public ok(): boolean {
