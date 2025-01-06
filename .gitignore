@@ -7,8 +7,7 @@
 !/.eslintrc.js
 !/jest.config.js
 
-!/index.ts
-!/index.test.tsx
+!/declarations.d.ts
 tsconfig.tsbuildinfo
 
 /dist
