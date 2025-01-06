@@ -34,7 +34,18 @@ export const CUSTOM_PROBLEM = /application\/vnd\.(.+?)\.problem(?:\.v[1-9][0-9]*
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
-type CompatibleFetch = (url: string, init?: RequestInit) => Promise<Response>;
+// Convert to Winter-CG compliant fetch
+type CompatibleRequestInit = Omit<
+  RequestInit,
+  'body' | 'cache' | 'signal' | 'priority' | 'redirect' | 'referrerPolicy' | 'window'
+> & { body?: BodyInit; signal?: AbortSignal; window?: any };
+
+type CompatibleFetch = (
+  url: string,
+
+  // Only keeping the ones used here
+  init?: Pick<CompatibleRequestInit, 'headers' | 'body' | 'method' | 'signal'>
+) => Promise<Response>;
 
 const actualThis = typeof globalThis === 'undefined' ? window : globalThis;
 // const Request = actualThis.Request
