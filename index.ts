@@ -34,10 +34,12 @@ export const CUSTOM_PROBLEM = /application\/vnd\.(.+?)\.problem(?:\.v[1-9][0-9]*
 
 export const ACCEPT_PROBLEM = MEDIA_PROBLEM + '; q=0.1';
 
+type CompatibleFetch = (url: string, init?: RequestInit) => Promise<Response>;
+
 const actualThis = typeof globalThis === 'undefined' ? window : globalThis;
 // const Request = actualThis.Request
 const Response = actualThis.Response;
-const globalFetch = actualThis.fetch;
+const globalFetch: CompatibleFetch = actualThis.fetch;
 
 const AcceptRef: { current: readonly string[] } = { current: [ACCEPT_PROBLEM] };
 const HeadersRef: { current: Readonly<Record<string, string>> } = {
