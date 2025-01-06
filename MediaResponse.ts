@@ -1,4 +1,4 @@
-import URLSearchParams from '@ungap/url-search-params/esm';
+import URLSearchParams from '@ungap/url-search-params';
 
 import { FetchMediaError } from './FetchMediaError';
 
